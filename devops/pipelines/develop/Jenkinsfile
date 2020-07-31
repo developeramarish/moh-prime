@@ -51,7 +51,7 @@ pipeline {
             agent { label 'master' }
             steps {
                 script {
-                  pwd
+                  echo pwd
                   sh "./player.sh notifyGitHub pending build $GITHUB_CREDENTIAL"
                   echo "Building ..."
                   sh "./player.sh build api dev ${apiArgs} -p SUFFIX=${suffix}"
