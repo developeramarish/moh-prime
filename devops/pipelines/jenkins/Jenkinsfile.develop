@@ -33,7 +33,7 @@ pipeline {
         GITHUB_CREDENTIAL = credentials('42118129-086b-40a0-b800-bf490c2a2e82')
 
         // Location of pipeline bash scripts
-        bashScriptLocation = "/devops/pipelines/player.sh"
+        bashScriptLocation = "./devops/pipelines/player.sh"
     }
     options {
         disableResume()
