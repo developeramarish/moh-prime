@@ -1,4 +1,4 @@
-/* Jenkinsfile
+/* Jenkinsfile.develop
  *
  * For building and deploying the develop branch, as well as any associated
  * pull requests to the develop branch.
