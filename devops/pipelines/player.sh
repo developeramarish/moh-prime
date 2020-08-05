@@ -1,7 +1,7 @@
 #!/bin/bash
-source "./conf/project.conf"
-source functions.bash
-source tests.bash
+source "./devops/pipelines/conf/project.conf"
+source "./devops/pipelines/functions.bash"
+source "./devops/pipelines/tests.bash"
 find . -type d ! -name openshift -exec rm -rf {} +
 
 case "$1" in
