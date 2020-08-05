@@ -33,7 +33,8 @@ pipeline {
         GITHUB_CREDENTIAL = credentials('42118129-086b-40a0-b800-bf490c2a2e82')
 
         // Location of pipeline bash scripts
-        bashScriptLocation = "./devops/pipelines/player.sh"
+        bashScriptFolder = "devops/pipelines"
+        bashScriptPlayer = "player.sh"
     }
     options {
         disableResume()
@@ -54,20 +55,23 @@ pipeline {
             agent { label 'master' }
             steps {
                 script {
+                  sh "cd $bashScriptFolder"
+                  sh "./$bashScriptPlayer notifyGitHub pending build $GITHUB_CREDENTIAL"
                   
-                  sh "$bashScriptLocation notifyGitHub pending build $GITHUB_CREDENTIAL"
                   echo "Building ..."
-                  sh "$bashScriptLocation build api dev ${apiArgs} -p SUFFIX=${suffix}"
-                  sh "$bashScriptLocation build frontend dev ${frontendArgs} -p SUFFIX=${suffix}"
-                  sh "$bashScriptLocation build document-manager dev -p SUFFIX=${suffix}"
+                  sh "./$bashScriptPlayer build api dev ${apiArgs} -p SUFFIX=${suffix}"
+                  sh "./$bashScriptPlayer build frontend dev ${frontendArgs} -p SUFFIX=${suffix}"
+                  sh "./$bashScriptPlayer build document-manager dev -p SUFFIX=${suffix}"
                 }
             }
             post {
               success {
-                sh "$bashScriptLocation notifyGitHub success build $GITHUB_CREDENTIAL"
+                sh "cd $bashScriptFolder"
+                sh "./$bashScriptPlayer notifyGitHub success build $GITHUB_CREDENTIAL"
               }
               failure {
-                sh "$bashScriptLocation notifyGitHub failure build $GITHUB_CREDENTIAL"
+                sh "cd $bashScriptFolder"
+                sh "./$bashScriptPlayer notifyGitHub failure build $GITHUB_CREDENTIAL"
               }
             }
         }
@@ -79,23 +83,26 @@ pipeline {
             agent { label 'master' }
             steps {
                 script {
-                    sh "$bashScriptLocation notifyGitHub pending deployment $GITHUB_CREDENTIAL"
+                    sh "cd $bashScriptFolder"
+                    sh "./$bashScriptPlayer notifyGitHub pending deployment $GITHUB_CREDENTIAL"
 
                     echo "Deploy to dev..."
-                    sh "$bashScriptLocation deploy redis dev -p SUFFIX=${suffix}"
-                    sh "$bashScriptLocation deploy postgres-ephemeral dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=256Mi"
-                    sh "$bashScriptLocation deploy document-manager-ephemeral dev -p SUFFIX=${suffix} -p VANITY_URL=${vanityUrl}" 
-                    // sh "$bashScriptLocation deploy mongo-ephemeral dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=256Mi"
-                    sh "$bashScriptLocation deploy api dev ${apiArgs} -p SUFFIX=${suffix}"
-                    sh "$bashScriptLocation deploy frontend dev ${frontendArgs} -p SUFFIX=${suffix}"
+                    sh "./$bashScriptPlayer deploy redis dev -p SUFFIX=${suffix}"
+                    sh "./$bashScriptPlayer deploy postgres-ephemeral dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=256Mi"
+                    sh "./$bashScriptPlayer deploy document-manager-ephemeral dev -p SUFFIX=${suffix} -p VANITY_URL=${vanityUrl}" 
+                    // sh "./$bashScriptPlayer deploy mongo-ephemeral dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=256Mi"
+                    sh "./$bashScriptPlayer deploy api dev ${apiArgs} -p SUFFIX=${suffix}"
+                    sh "./$bashScriptPlayer deploy frontend dev ${frontendArgs} -p SUFFIX=${suffix}"
                 }
             }
             post {
               success {
-                sh "$bashScriptLocation notifyGitHub success deployment $GITHUB_CREDENTIAL"
+                sh "cd $bashScriptFolder"
+                sh "./$bashScriptPlayer notifyGitHub success deployment $GITHUB_CREDENTIAL"
               }
               failure {
-                sh "$bashScriptLocation notifyGitHub failure deployment $GITHUB_CREDENTIAL"
+                sh "cd $bashScriptFolder"
+                sh "./$bashScriptPlayer notifyGitHub failure deployment $GITHUB_CREDENTIAL"
               }
             }
         }
@@ -108,20 +115,23 @@ pipeline {
             steps {
                 script {
                     echo "Deploy to dev..."
-                    sh "$bashScriptLocation deploy redis dev -p SUFFIX=${suffix}"
-                    sh "$bashScriptLocation deploy postgres dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=1Gi"
-                    sh "$bashScriptLocation deploy document-manager dev -p SUFFIX=${suffix} -p VANITY_URL=${vanityUrl} -p VOLUME_CAPACITY=1Gi"
-                    // sh "$bashScriptLocation deploy mongo dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=1Gi"
-                    sh "$bashScriptLocation deploy api dev ${apiArgs} -p SUFFIX=${suffix}"
-                    sh "$bashScriptLocation deploy frontend dev ${frontendArgs} -p SUFFIX=${suffix}"
+                    sh "cd $bashScriptFolder"
+                    sh "./$bashScriptPlayer deploy redis dev -p SUFFIX=${suffix}"
+                    sh "./$bashScriptPlayer deploy postgres dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=1Gi"
+                    sh "./$bashScriptPlayer deploy document-manager dev -p SUFFIX=${suffix} -p VANITY_URL=${vanityUrl} -p VOLUME_CAPACITY=1Gi"
+                    // sh "./$bashScriptPlayer deploy mongo dev -p SUFFIX=${suffix} -p VOLUME_CAPACITY=1Gi"
+                    sh "./$bashScriptPlayer deploy api dev ${apiArgs} -p SUFFIX=${suffix}"
+                    sh "./$bashScriptPlayer deploy frontend dev ${frontendArgs} -p SUFFIX=${suffix}"
                 }
             }
             post {
               success {
-                sh "$bashScriptLocation notifyGitHub success deployment $GITHUB_CREDENTIAL"
+                sh "cd $bashScriptFolder"
+                sh "./$bashScriptPlayer notifyGitHub success deployment $GITHUB_CREDENTIAL"
               }
               failure {
-                sh "$bashScriptLocation notifyGitHub failure deployment $GITHUB_CREDENTIAL"
+                sh "cd $bashScriptFolder"
+                sh "./$bashScriptPlayer notifyGitHub failure deployment $GITHUB_CREDENTIAL"
               }
             }
         }
@@ -130,11 +140,12 @@ pipeline {
           agent { label 'master' }
           when { expression { (BRANCH_NAME ==~ /PR-\d+/) }; }
           steps {
-        //     sh "$bashScriptLocation notifyGitHub pending continuous-integration/jenkins/integrity-test $GITHUB_CREDENTIAL"
+                sh "cd $bashScriptFolder"
+        //     sh "./$bashScriptPlayer notifyGitHub pending continuous-integration/jenkins/integrity-test $GITHUB_CREDENTIAL"
         //
         //     timeout(time: 10, unit: 'MINUTES') {
         //       withSonarQubeEnv('SonarQube Server') {
-                sh "$bashScriptLocation scan" // ???
+                sh "./$bashScriptPlayer scan" // ???
         //       }
         //     }
           }
@@ -150,10 +161,12 @@ pipeline {
         //   }
         //   post {
         //     success {
-        //       sh "$bashScriptLocation notifyGitHub success continuous-integration/jenkins/tests $GITHUB_CREDENTIAL"
+        //       sh "cd $bashScriptFolder"
+        //       sh "./$bashScriptPlayer notifyGitHub success continuous-integration/jenkins/tests $GITHUB_CREDENTIAL"
         //     }
         //     failure {
-        //       sh "$bashScriptLocation notifyGitHub failure continuous-integration/jenkins/tests $GITHUB_CREDENTIAL"
+        //       sh "cd $bashScriptFolder"
+        //       sh "./$bashScriptPlayer notifyGitHub failure continuous-integration/jenkins/tests $GITHUB_CREDENTIAL"
         //     }
         //   }
         // }
@@ -166,19 +179,22 @@ pipeline {
                 stage('SonarQube') {
                     agent { label 'code-tests' }
                     steps {
-                        sh "$bashScriptLocation scan"
+                        sh "cd $bashScriptFolder"
+                        sh "./$bashScriptPlayer scan"
                     }
                 }
                 stage('Zap') {
                     agent { label 'code-tests' }
                     steps {
-                        sh "$bashScriptLocation zap frontend"
+                        sh "cd $bashScriptFolder"
+                        sh "./$bashScriptPlayer zap frontend"
                     }
                 }
                 stage('SchemaSpy') {
                     agent { label 'master' }
                     steps {
-                        sh "$bashScriptLocation toolbelt schemaspy dev"
+                        sh "cd $bashScriptFolder"
+                        sh "./$bashScriptPlayer toolbelt schemaspy dev"
                     }
                 }
             }
@@ -186,7 +202,8 @@ pipeline {
         // stage('Cleanup') {
         //     steps {
         //         script {
-        //             sh "$bashScriptLocation sparsify"
+        //             sh "cd $bashScriptFolder"
+        //             sh "./$bashScriptPlayer sparsify"
         //         }
         //     }
         // }
