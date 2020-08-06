@@ -1,0 +1,82 @@
+/* Jenkinsfile.test
+ *
+ * After merging the develop branch into the test branch, this will work to 
+ * build and deploy changes to the OpenShift test environment.
+ *
+ * Deployments to test are automatically performed when merges from any
+ * external branches are performed. By team rules and standards, only
+ * the develop branch is allowed to have this privilege.
+ *
+ * Procedure:
+ *  1. Build Test branch
+ *  2. Deploy Test branch
+ *  3. Perform code quality check
+ *      a. SonarQube scan
+ *      b. OWASP ZAP scan 
+ *
+ */
+
+pipeline {
+    agent none
+    stages {
+        stage('Build & Deploy Test Environment') {
+                options {
+                timeout(time: 120, unit: 'MINUTES')   // timeout on this stage
+            }
+            // Build and deploy to Test
+            when { expression { ( BRANCH_NAME == 'test' ) } }
+            environment {
+                    branchLower = BRANCH_NAME.toLowerCase()
+                    vanityUrl = "${branchLower}.pharmanetenrolment.gov.bc.ca"
+                    schema = "https"
+                    port = "8443"
+                    frontendArgs = "-p REDIRECT_URL=${schema}://${vanityUrl} -p VANITY_URL=${vanityUrl}"
+                    apiArgs = "-p ASPNETCORE_ENVIRONMENT=Release -p VANITY_URL=${vanityUrl}"
+                    suffix = "-test"
+            }
+            agent { label 'master' }
+            steps {
+                script {
+                    echo "Building (TEST) branch ..."
+                    sh "./player.sh build api test ${apiArgs} -p SUFFIX=${suffix}"
+                    sh "./player.sh build frontend test ${frontendArgs} -p SUFFIX=${suffix}"
+                    sh "./player.sh build document-manager test -p SUFFIX=${suffix}"
+
+                    echo "Deploying (TEST) branch ..."
+                    sh "./player.sh deploy postgres test -p SUFFIX=${suffix}"
+                    sh "./player.sh deploy redis test -p SUFFIX=${suffix}"
+                    // sh "./player.sh deploy mongo test -p SUFFIX=${suffix}"
+                    sh "./player.sh deploy api test ${apiArgs} -p SUFFIX=${suffix}"
+                    sh "./player.sh deploy frontend test ${frontendArgs} -p SUFFIX=${suffix}"
+                    sh "./player.sh deploy document-manager test -p SUFFIX=${suffix} -p VOLUME_CAPACITY=1Gi -p VANITY_URL=${vanityUrl}"
+                    sh "./player.sh toolbelt schemaspy test"
+                }
+            }
+        }
+        stage('Quality Check') {
+            options {
+                timeout(time: 30, unit: 'MINUTES')   // timeout on this stage
+            }
+            
+            // Run quality and security scan on both .NET Web API and
+            // Angular frontend code for potential vulnerabilities.
+            when { expression { ( BRANCH_NAME == 'test' ) } }
+            parallel {
+                stage('SonarQube Code Check') {
+                    agent { label 'code-tests' }
+                    steps {
+                        sh "./player.sh scan"
+                    }      
+                }
+                stage('ZAP') {
+                    agent { label 'code-tests' }
+                    steps {
+                        checkout scm
+                        echo "Scanning..."
+                        sh "./player.sh zap frontend"
+                    }
+                }
+            }
+        }
+    }
+}
