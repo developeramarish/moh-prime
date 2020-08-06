@@ -1,7 +1,18 @@
 #!/bin/bash
-source "conf/project.conf"
-source "functions.bash"
-source "tests.bash"
+
+# Location of associated conf and bash scripts
+project = "./devops/pipelines/conf/project.conf"
+functions = "./devops/pipelines/functions.bash"
+tests = "./devops/pipelines/tests.bash"
+
+# Allow associated conf and bash scripts to be executed outside of folder
+chmod +x ./devops/pipelines/conf/project.conf
+chmod +x ./devops/pipelines/functions.bash
+chmod +x ./devops/pipelines/tests.bash
+
+source "./devops/pipelines/conf/project.conf"
+source "./devops/pipelines/functions.bash"
+source "./devops/pipelines/tests.bash"
 find . -type d ! -name openshift -exec rm -rf {} +
 
 case "$1" in
