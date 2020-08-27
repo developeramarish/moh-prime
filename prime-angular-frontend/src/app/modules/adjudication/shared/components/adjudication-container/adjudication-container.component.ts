@@ -8,6 +8,8 @@ import { map, exhaustMap, tap } from 'rxjs/operators';
 
 import { MatTableDataSourceUtils } from '@lib/modules/ngx-material/mat-table-data-source-utils.class';
 
+import { Config } from '@config/config.model';
+import { ConfigService } from '@config/config.service';
 import { EnrolmentStatus } from '@shared/enums/enrolment-status.enum';
 import { SubmissionAction } from '@shared/enums/submission-action.enum';
 import { HttpEnrollee } from '@shared/models/enrolment.model';
@@ -42,6 +44,7 @@ export class AdjudicationContainerComponent implements OnInit {
   public dataSource: MatTableDataSource<HttpEnrollee>;
 
   public showSearchFilter: boolean;
+  public searchStatuses: Config<number>[];
   public AdjudicationRoutes = AdjudicationRoutes;
 
   private routeUtils: RouteUtils;
@@ -52,7 +55,8 @@ export class AdjudicationContainerComponent implements OnInit {
     protected router: Router,
     private authService: AuthService,
     private adjudicationResource: AdjudicationResource,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private configService: ConfigService
   ) {
     this.routeUtils = new RouteUtils(route, router, AdjudicationRoutes.routePath(AdjudicationRoutes.ENROLLEES));
 
@@ -62,6 +66,7 @@ export class AdjudicationContainerComponent implements OnInit {
     this.dataSource = new MatTableDataSource<HttpEnrollee>([]);
 
     this.showSearchFilter = false;
+    this.searchStatuses = this.configService.statuses;
   }
 
   public onSearch(search: string | null): void {

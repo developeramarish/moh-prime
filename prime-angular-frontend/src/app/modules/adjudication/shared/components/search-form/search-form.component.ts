@@ -15,19 +15,17 @@ import { EnrolmentStatus } from '@shared/enums/enrolment-status.enum';
 })
 export class SearchFormComponent implements OnInit {
   @Input() public disabled: boolean;
+  @Input() public statuses: Config<number>[];
   @Output() public search: EventEmitter<string>;
   @Output() public filter: EventEmitter<EnrolmentStatus>;
   @Output() public refresh: EventEmitter<void>;
 
   public form: FormGroup;
-  public statuses: Config<number>[];
 
   constructor(
     private route: ActivatedRoute,
-    private fb: FormBuilder,
-    private configService: ConfigService,
+    private fb: FormBuilder
   ) {
-    this.statuses = this.configService.statuses;
     this.search = new EventEmitter<string>();
     this.filter = new EventEmitter<EnrolmentStatus>();
     this.refresh = new EventEmitter<void>();
@@ -69,6 +67,9 @@ export class SearchFormComponent implements OnInit {
     this.statusCode.valueChanges
       .pipe(debounceTime(500))
       // Passing `null` removes the query parameter from the URL
-      .subscribe((enrolmentStatus: EnrolmentStatus) => this.filter.emit(enrolmentStatus || null));
+      .subscribe((status: number) => {
+        const value = (status || status === 0) ? status : null;
+        this.filter.emit(value);
+      });
   }
 }

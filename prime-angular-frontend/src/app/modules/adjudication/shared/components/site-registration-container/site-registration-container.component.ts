@@ -4,10 +4,12 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 
 import { Subscription, Observable, EMPTY, of, noop, combineLatest } from 'rxjs';
-import { exhaustMap, map, tap, withLatestFrom, take } from 'rxjs/operators';
+import { exhaustMap, map, tap, take } from 'rxjs/operators';
 
 import { MatTableDataSourceUtils } from '@lib/modules/ngx-material/mat-table-data-source-utils.class';
 
+import { Config } from '@config/config.model';
+import { ConfigService } from '@config/config.service';
 import { OrganizationResource } from '@core/resources/organization-resource.service';
 import { SiteResource } from '@core/resources/site-resource.service';
 import { DIALOG_DEFAULT_OPTION } from '@shared/components/dialogs/dialogs-properties.provider';
@@ -38,6 +40,7 @@ export class SiteRegistrationContainerComponent implements OnInit {
   public dataSource: MatTableDataSource<SiteRegistrationListViewModel>;
 
   public showSearchFilter: boolean;
+  public searchStatuses: Config<number>[];
   public AdjudicationRoutes = AdjudicationRoutes;
 
   private routeUtils: RouteUtils;
@@ -49,7 +52,8 @@ export class SiteRegistrationContainerComponent implements OnInit {
     private authService: AuthService,
     private organizationResource: OrganizationResource,
     private siteResource: SiteResource,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private configService: ConfigService
   ) {
     this.routeUtils = new RouteUtils(route, router, AdjudicationRoutes.routePath(AdjudicationRoutes.SITE_REGISTRATIONS));
 
@@ -57,14 +61,22 @@ export class SiteRegistrationContainerComponent implements OnInit {
 
     this.hasActions = false;
     this.dataSource = new MatTableDataSource<SiteRegistrationListViewModel>([]);
+
+    this.showSearchFilter = false;
+    // TODO temporary hardcoded statuses
+    this.searchStatuses = [
+      new Config(0, 'Under Review'),
+      new Config(1, 'Approved')
+    ];
   }
 
   public onSearch(search: string | null): void {
     this.routeUtils.updateQueryParams({ search });
   }
 
-  public onFilter(status: any | null): void {
-    this.routeUtils.updateQueryParams({ status });
+  // TODO temporary hardcoded query param key
+  public onFilter(approved: any | null): void {
+    this.routeUtils.updateQueryParams({ approved });
   }
 
   public onRefresh(): void {
