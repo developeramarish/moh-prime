@@ -29,6 +29,7 @@ export class OrganizationResource {
   public getOrganizations(): Observable<OrganizationListViewModel[]>;
   public getOrganizations(queryParams: { [key: string]: any }): Observable<OrganizationListViewModel[] | Organization[]>;
   public getOrganizations(queryParams?: { [key: string]: any }): Observable<OrganizationListViewModel[] | Organization[]> {
+    // TODO temporary until refactor of search component to be more flexible
     const temp = { textSearch: queryParams.search, approved: !!queryParams.approved };
     const params = this.apiResourceUtilsService.makeHttpParams(temp);
     return this.apiResource.get<OrganizationListViewModel[] | Organization[]>('organizations', params)
