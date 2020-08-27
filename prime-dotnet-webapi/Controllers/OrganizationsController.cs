@@ -49,26 +49,28 @@ namespace Prime.Controllers
         /// Gets all of the Organizations for a user, or all organizations if user has ADMIN role
         /// </summary>
         /// <param name="verbose"></param>
+        /// <param name="searchModel"></param>
         [HttpGet(Name = nameof(GetOrganizations))]
         [ProducesResponseType(typeof(ApiBadRequestResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiResultResponse<IEnumerable<Organization>>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Organization>>> GetOrganizations([FromQuery] bool verbose)
+        [ProducesResponseType(typeof(ApiResultResponse<IEnumerable<OrganizationListViewModel>>), StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetOrganizations([FromQuery] bool verbose, [FromQuery] SiteSearchOptions searchModel)
         {
-            IEnumerable<Organization> organizations = null;
+            int? partyId = null;
 
-            if (User.HasAdminView())
-            {
-                organizations = await _organizationService.GetOrganizationsAsync();
-            }
-            else
+            if (!User.HasAdminView())
             {
                 var party = await _partyService.GetPartyForUserIdAsync(User.GetPrimeUserId());
+                if (party == null)
+                {
+                    return Ok(ApiResponse.Result(Enumerable.Empty<Organization>()));
+                }
 
-                organizations = (party != null)
-                    ? await _organizationService.GetOrganizationsAsync(party.Id)
-                    : Enumerable.Empty<Organization>();
+                partyId = party.Id;
             }
+
+            var organizations = await _organizationService.GetOrganizationsAsync(partyId, searchModel);
 
             if (verbose)
             {

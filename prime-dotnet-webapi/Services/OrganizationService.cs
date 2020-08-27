@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Prime.Models;
+using Prime.Models.Api;
 using Prime.ViewModels;
 
 namespace Prime.Services
@@ -25,19 +26,46 @@ namespace Prime.Services
             _partyService = partyService;
         }
 
-        public async Task<IEnumerable<Organization>> GetOrganizationsAsync(int? partyId = null)
+        public async Task<IEnumerable<Organization>> GetOrganizationsAsync(int? signingAuthorityId = null, SiteSearchOptions searchModel = null)
         {
-            IQueryable<Organization> query = this.GetBaseOrganizationQuery();
+            searchModel = searchModel ?? new SiteSearchOptions();
 
-            if (partyId != null)
-            {
-                query = query.Where(o => o.SigningAuthorityId == partyId);
-            }
-
-            return await query
-                .Include(o => o.Sites).ThenInclude(s => s.SiteVendors)
-                .Include(o => o.Sites).ThenInclude(s => s.PhysicalAddress)
+            var entities = await this.GetBaseOrganizationQuery()
+                .AsNoTracking()
+                .Include(o => o.Sites)
+                //     .ThenInclude(s => s.SiteVendors)
+                // .Include(o => o.Sites)
+                //     .ThenInclude(s => s.PhysicalAddress)
+                .If(signingAuthorityId.HasValue, q => q.Where(o => o.SigningAuthorityId == signingAuthorityId.Value))
+                .If(!string.IsNullOrWhiteSpace(searchModel.TextSearch), q => q
+                    .Search(o => o.Name,
+                        o => o.Id.ToString(),
+                        o => o.SigningAuthority.FirstName,
+                        o => o.SigningAuthority.PreferredFirstName,
+                        o => o.SigningAuthority.LastName,
+                        o => o.SigningAuthority.PreferredLastName,
+                        o => o.DoingBusinessAs)
+                    .Containing(searchModel.TextSearch))
+                .Select(o => new
+                {
+                    Organization = o,
+                    Sites = o.Sites
+                        .Where(s => s.PEC != null)
+                    // .AsQueryable()
+                    // .If(searchModel.Approved == true, q => q.Where(s => s.PEC != null))
+                    // .If(searchModel.Approved == false, q => q.Where(s => s.PEC == null))
+                    // // .If(searchModel.VendorCode.HasValue, q => q.Where(s => s.SiteVendors.Any(v => v.VendorCode == searchModel.VendorCode.Value)))
+                    // // .If(searchModel.CareSettingCode.HasValue, q => q.Where(s => s.CareSettingCode.HasValue && s.CareSettingCode.Value == searchModel.CareSettingCode.Value))
+                    // .If(!string.IsNullOrWhiteSpace(searchModel.TextSearch), q => q
+                    //     .Search(s => s.PEC)
+                    //     .Containing(searchModel.TextSearch))
+                })
+                .Select(x => x.Organization)
                 .ToListAsync();
+            var t = 1;
+            return entities;//.Select(x => x.Organization);
+            //.Where(x => x.Sites.Any())
+
         }
 
         public async Task<Organization> GetOrganizationAsync(int organizationId)

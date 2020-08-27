@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Prime.Models;
+using Prime.Models.Api;
 using Prime.ViewModels;
 
 namespace Prime.Services
 {
     public interface IOrganizationService
     {
-        Task<IEnumerable<Organization>> GetOrganizationsAsync(int? partyId = null);
+        Task<IEnumerable<Organization>> GetOrganizationsAsync(int? signingAuthorityId = null, SiteSearchOptions searchModel = null);
         Task<Organization> GetOrganizationAsync(int organizationId);
         Task<int> CreateOrganizationAsync(Party signingAuthority);
         Task<int> UpdateOrganizationAsync(int organizationId, OrganizationUpdateModel updatedOrganization);
