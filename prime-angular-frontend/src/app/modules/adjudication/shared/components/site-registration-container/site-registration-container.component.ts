@@ -71,6 +71,8 @@ export class SiteRegistrationContainerComponent implements OnInit {
   }
 
   public onSearch(search: string | null): void {
+    console.log('SEARCH');
+
     this.routeUtils.updateQueryParams({ search });
   }
 
@@ -132,8 +134,10 @@ export class SiteRegistrationContainerComponent implements OnInit {
   }
 
   private getOrganizations({ search, status }: { search?: string, status?: number }): Observable<OrganizationListViewModel[]> {
-    return this.organizationResource.getOrganizations()
+    const queryParams = { textSearch: search, approved: status };
+    return this.organizationResource.getOrganizations(queryParams)
       .pipe(
+        map((organizations: OrganizationListViewModel[]) => organizations),
         tap(() => this.showSearchFilter = true)
       );
   }
