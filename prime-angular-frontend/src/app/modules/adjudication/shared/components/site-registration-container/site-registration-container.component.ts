@@ -71,8 +71,6 @@ export class SiteRegistrationContainerComponent implements OnInit {
   }
 
   public onSearch(search: string | null): void {
-    console.log('SEARCH');
-
     this.routeUtils.updateQueryParams({ search });
   }
 
