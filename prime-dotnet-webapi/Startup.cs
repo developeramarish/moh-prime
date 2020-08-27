@@ -167,6 +167,16 @@ namespace Prime
             });
 
             services.AddTransient<ISmtpEmailClient, SmtpEmailClient>();
+
+            services.AddSingleton(new AddressAutocompleteClientCredentials
+            {
+                apiKey = PrimeConstants.ADDRESS_AUTOCOMPLETE_API_KEY
+            });
+
+            services.AddHttpClient<IAddressAutocompleteClient, AddressAutocompleteClient>(client =>
+            {
+                client.BaseAddress = new Uri(PrimeConstants.ADDRESS_AUTOCOMPLETE_API_URL.EnsureTrailingSlash());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
