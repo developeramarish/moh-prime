@@ -8,6 +8,8 @@ import { Config } from '@config/config.model';
 import { ConfigService } from '@config/config.service';
 import { EnrolmentStatus } from '@shared/enums/enrolment-status.enum';
 
+// TODO directly alter the URL with query params for other components to listen to changes
+// instead of emitting the changes up and then altering the query params
 @Component({
   selector: 'app-search-form',
   templateUrl: './search-form.component.html',

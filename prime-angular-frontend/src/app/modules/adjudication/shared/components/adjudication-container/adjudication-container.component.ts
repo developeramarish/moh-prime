@@ -69,12 +69,12 @@ export class AdjudicationContainerComponent implements OnInit {
     this.searchStatuses = this.configService.statuses;
   }
 
-  public onSearch(search: string | null): void {
-    this.routeUtils.updateQueryParams({ search });
+  public onSearch(textSearch: string | null): void {
+    this.routeUtils.updateQueryParams({ textSearch });
   }
 
-  public onFilter(status: EnrolmentStatus | null): void {
-    this.routeUtils.updateQueryParams({ status });
+  public onFilter(statusCode: number | null): void {
+    this.routeUtils.updateQueryParams({ statusCode });
   }
 
   public onRefresh(): void {
@@ -321,7 +321,7 @@ export class AdjudicationContainerComponent implements OnInit {
       .subscribe((queryParams: { [key: string]: any }) => this.getDataset(queryParams));
   }
 
-  private getDataset(queryParams: { search?: string, status?: number }) {
+  private getDataset(queryParams: { [key: string]: any }) {
     const enrolleeId = this.route.snapshot.params.id;
     const results$ = (enrolleeId)
       ? this.getEnrolleeById(enrolleeId)
@@ -340,8 +340,8 @@ export class AdjudicationContainerComponent implements OnInit {
       );
   }
 
-  private getEnrollees({ search, status }: { search?: string, status?: number }) {
-    return this.adjudicationResource.getEnrollees(search, status)
+  private getEnrollees(queryParams: { [key: string]: any }) {
+    return this.adjudicationResource.getEnrollees(queryParams)
       .pipe(
         tap(() => this.showSearchFilter = true)
       );

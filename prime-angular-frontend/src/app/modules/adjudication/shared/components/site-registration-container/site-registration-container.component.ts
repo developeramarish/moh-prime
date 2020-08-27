@@ -63,19 +63,19 @@ export class SiteRegistrationContainerComponent implements OnInit {
     this.dataSource = new MatTableDataSource<SiteRegistrationListViewModel>([]);
 
     this.showSearchFilter = false;
-    // TODO temporary hardcoded statuses
+    // TODO temporary hardcoded statuses and singular key is managed by search component for now
     this.searchStatuses = [
       new Config(0, 'Under Review'),
       new Config(1, 'Approved')
     ];
   }
 
-  public onSearch(search: string | null): void {
-    this.routeUtils.updateQueryParams({ search });
+  public onSearch(textSearch: string | null): void {
+    this.routeUtils.updateQueryParams({ textSearch });
   }
 
   // TODO temporary hardcoded query param key
-  public onFilter(approved: any | null): void {
+  public onFilter(approved: number | null): void {
     this.routeUtils.updateQueryParams({ approved });
   }
 

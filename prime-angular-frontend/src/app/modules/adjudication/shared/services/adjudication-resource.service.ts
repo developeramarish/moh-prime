@@ -20,7 +20,6 @@ import { Site } from '@registration/shared/models/site.model';
 
 import { AdjudicationNote } from '@adjudication/shared/models/adjudication-note.model';
 import { BusinessEvent } from '@adjudication/shared/models/business-event.model';
-import { CareSetting } from '@enrolment/shared/models/care-setting.model';
 
 @Injectable({
   providedIn: 'root'
@@ -34,8 +33,8 @@ export class AdjudicationResource {
     private logger: LoggerService
   ) { }
 
-  public getEnrollees(textSearch?: string, statusCode?: number): Observable<HttpEnrollee[]> {
-    const params = this.apiResourceUtilsService.makeHttpParams({ textSearch, statusCode });
+  public getEnrollees(queryParams: { [key: string]: any }): Observable<HttpEnrollee[]> {
+    const params = this.apiResourceUtilsService.makeHttpParams(queryParams);
     return this.apiResource.get<HttpEnrollee[]>('enrollees', params)
       .pipe(
         map((response: ApiHttpResponse<HttpEnrollee[]>) => response.result),
