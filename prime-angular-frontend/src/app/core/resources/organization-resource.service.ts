@@ -27,7 +27,7 @@ export class OrganizationResource {
   ) { }
 
   public getOrganizations(): Observable<OrganizationListViewModel[]>;
-  public getOrganizations(queryParams?: { [key: string]: any }): Observable<OrganizationListViewModel[] | Organization[]>;
+  public getOrganizations(queryParams: { [key: string]: any }): Observable<OrganizationListViewModel[] | Organization[]>;
   public getOrganizations(queryParams?: { [key: string]: any }): Observable<OrganizationListViewModel[] | Organization[]> {
     const params = this.apiResourceUtilsService.makeHttpParams(queryParams);
     return this.apiResource.get<OrganizationListViewModel[] | Organization[]>('organizations', params)
@@ -42,8 +42,7 @@ export class OrganizationResource {
       );
   }
 
-  public getOrganizationById(organizationId: number, queryParams?: { [key: string]: any }): Observable<Organization> {
-    const params = this.apiResourceUtilsService.makeHttpParams({ queryParams });
+  public getOrganizationById(organizationId: number): Observable<Organization> {
     return this.apiResource.get<Organization>(`organizations/${organizationId}`)
       .pipe(
         map((response: ApiHttpResponse<Organization>) => response.result),

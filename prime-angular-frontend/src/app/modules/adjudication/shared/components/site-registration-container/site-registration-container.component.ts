@@ -113,7 +113,7 @@ export class SiteRegistrationContainerComponent implements OnInit {
     }
   }
 
-  private getDataset(queryParams: { search?: string, status?: number }): void {
+  private getDataset(queryParams: { [key: string]: any }): void {
     const { oid, sid } = this.route.snapshot.params;
     const request$ = (oid)
       ? combineLatest([
@@ -133,8 +133,7 @@ export class SiteRegistrationContainerComponent implements OnInit {
       .subscribe((siteRegistrations: SiteRegistrationListViewModel[]) => this.dataSource.data = siteRegistrations);
   }
 
-  private getOrganizations({ search, status }: { search?: string, status?: number }): Observable<OrganizationListViewModel[]> {
-    const queryParams = { textSearch: search, approved: status };
+  private getOrganizations(queryParams: { [key: string]: any }): Observable<OrganizationListViewModel[]> {
     return this.organizationResource.getOrganizations(queryParams)
       .pipe(
         map((organizations: OrganizationListViewModel[]) => organizations),
